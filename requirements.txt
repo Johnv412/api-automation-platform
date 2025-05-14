@@ -1,0 +1,19 @@
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
+python-dotenv==1.0.1
+PyYAML==6.0.1
+requests==2.31.0
+httpx==0.27.0
+aiohttp==3.9.3
+Jinja2==3.1.3
+python-multipart==0.0.9
+# For potential future database use with SQLAlchemy (not used yet)
+# SQLAlchemy==2.0.29
+# pymysql==1.1.0
+
+# For testing (optional, but good practice)
+# pytest==8.1.1
+# pytest-asyncio==0.23.6
+
+# Add any other specific dependencies identified during development
+

@@ -1,0 +1,62 @@
+# config/production.yaml.example
+# Production specific configurations for API Integration Platform
+# Rename to production.yaml and fill with actual production values.
+
+version: "0.1.0"
+platform_name: "API Integration Platform"
+
+global_log_level: "INFO" # Default log level for production
+
+logging:
+  root:
+    level: "INFO"
+    handlers: ["file_json"] # Console logging might be too verbose or insecure for prod by default
+  handlers:
+    console: # Keep definition, but not in root by default for prod
+      level: "INFO"
+      formatter: "detailed"
+    file_json:
+      filename: "logs/platform_prod.log.json" # Separate log file for production
+      level: "INFO"
+      maxBytes: 20971520 # 20MB
+      backupCount: 10
+  loggers:
+    "core.workflow_engine":
+      level: "INFO"
+    "utils.api_client":
+      level: "WARNING" # Less verbose for external libraries in prod
+    "dashboard":
+      level: "INFO"
+    "httpx":
+      level: "WARNING"
+    "uvicorn":
+      level: "WARNING"
+
+workflows:
+  definitions_path: "workflows/definitions/"
+  # Example: S3 path for production definitions
+  # definitions_path: "s3://my-workflow-bucket/definitions/"
+
+dashboard:
+  enabled: true # Set to false if dashboard is not exposed in production or handled by separate service
+  port: 5001 # Ensure this port is managed by your ingress/firewall
+  host: "0.0.0.0"
+  title: "API Platform Dashboard"
+  # For production, root_path should be configured if behind a reverse proxy
+  # Example: root_path: "/platform-dashboard"
+  root_path: ""
+
+# Node specific configurations for production
+nodes_default_config:
+  GitHubNode:
+    base_url: "https://api.github.com"
+    # timeout: 30 # Example: production timeout
+
+# Production credential management should rely on environment variables or a secrets manager.
+# SecureConfigLoader is designed to pick up environment variables.
+# Ensure relevant environment variables (e.g., GITHUB_TOKEN) are set in the production environment.
+# credentials_config:
+#   github_prod_creds:
+#     type: "env_token"
+#     env_variable_name: "PROD_GITHUB_TOKEN"
+

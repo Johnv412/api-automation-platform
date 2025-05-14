@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - API Platform Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>API Integration Platform Dashboard</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/nodes">Nodes</a>
+            <a href="/workflows">Workflows</a>
+            <a href="/logs">Logs</a>
+        </nav>
+    </header>
+    <main>
+        <h2>Workflow Definitions & Executions</h2>
+        
+        <section id="workflow-definitions">
+            <h3>Available Workflow Definitions</h3>
+            <div id="definitions-container">
+                <p>Loading workflow definitions...</p>
+            </div>
+        </section>
+        
+        <section id="workflow-executions">
+            <h3>Workflow Execution History</h3>
+            <div id="executions-container">
+                <p>Loading execution history...</p>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 API Integration Platform</p>
+    </footer>
+    <script>
+        async function fetchWorkflowDefinitions() {
+            const container = document.getElementById("definitions-container");
+            try {
+                const response = await fetch("/api/workflows/definitions/");
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const definitions = await response.json();
+                
+                if (definitions.length === 0) {
+                    container.innerHTML = "<p>No workflow definitions available.</p>";
+                    return;
+                }
+
+                let html = "<ul>";
+                definitions.forEach(def => {
+                    html += `<li>
+                                <h4>${def.name} (Version: ${def.version || 'N/A'})</h4>
+                                <p>Path: ${def.path || def.id}</p>
+                                <p>Description: ${def.description || 'No description.'}</p>
+                                <details>
+                                    <summary>View Full Definition</summary>
+                                    <pre>${JSON.stringify(def, null, 2)}</pre>
+                                </details>
+                             </li>`;
+                });
+                html += "</ul>";
+                container.innerHTML = html;
+            } catch (error) {
+                console.error("Failed to fetch workflow definitions:", error);
+                container.innerHTML = `<p class="error">Failed to load workflow definitions: ${error.message}</p>`;
+            }
+        }
+
+        async function fetchWorkflowExecutions() {
+            const container = document.getElementById("executions-container");
+            try {
+                const response = await fetch("/api/workflows/executions/?limit=20"); // Fetch last 20 executions
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const executions = await response.json();
+                
+                if (executions.length === 0) {
+                    container.innerHTML = "<p>No workflow executions found.</p>";
+                    return;
+                }
+
+                let html = "<table><tr><th>ID</th><th>Workflow Name</th><th>Status</th><th>Start Time</th><th>End Time</th><th>Details</th></tr>";
+                executions.forEach(exec => {
+                    html += `<tr>
+                                <td>${exec.execution_id}</td>
+                                <td>${exec.workflow_name || exec.workflow_id}</td>
+                                <td class="status-${exec.status ? exec.status.toLowerCase() : 'unknown'}">${exec.status || 'Unknown'}</td>
+                                <td>${exec.start_time ? new Date(exec.start_time).toLocaleString() : 'N/A'}</td>
+                                <td>${exec.end_time ? new Date(exec.end_time).toLocaleString() : 'N/A'}</td>
+                                <td><a href="/logs?execution_id=${exec.execution_id}">View Logs</a></td> 
+                             </tr>`;
+                });
+                html += "</table>";
+                container.innerHTML = html;
+            } catch (error) {
+                console.error("Failed to fetch workflow executions:", error);
+                container.innerHTML = `<p class="error">Failed to load workflow executions: ${error.message}</p>`;
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchWorkflowDefinitions();
+            fetchWorkflowExecutions();
+        });
+    </script>
+</body>
+</html>
+

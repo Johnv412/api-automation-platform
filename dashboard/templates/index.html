@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>API Integration Platform Dashboard</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/nodes">Nodes</a>
+            <a href="/workflows">Workflows</a>
+            <a href="/logs">Logs</a>
+        </nav>
+    </header>
+    <main>
+        <h2>Welcome to the Dashboard</h2>
+        <p>This dashboard provides an overview and management interface for the API Integration Platform.</p>
+        <p>Use the navigation above to explore available nodes, manage workflows, and view logs.</p>
+        
+        <section id="platform-status">
+            <h3>Platform Status</h3>
+            <p>Status: <span id="status-indicator" class="status-ok">Operational</span></p>
+            <!-- More status details can be added here, fetched via API if needed -->
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 API Integration Platform</p>
+    </footer>
+    <script>
+        // Basic script for future enhancements, e.g., fetching status
+        console.log("Dashboard home page loaded.");
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,89 @@
+# Example Workflow: Fetch GitHub PRs and then Get Weather (Conceptual)
+# /home/ubuntu/api_integration_platform/workflows/definitions/github_pr_weather.yaml
+
+name: "GitHub PR Details and Weather Lookup"
+version: "1.0.0"
+description: "Fetches details for a specific GitHub PR and then (conceptually) gets weather information based on PR location (if available)."
+author: "AI Platform Engineer"
+creation_date: "2025-05-14"
+
+# Global settings for the workflow (optional)
+# settings:
+#   timeout_seconds: 300
+#   default_retry_policy: # To be defined
+#     attempts: 3
+#     delay: 5
+#     backoff: 2
+
+# Initial input to the workflow (can be overridden at runtime)
+initial_input:
+  github_owner: "octocat"
+  github_repo: "Spoon-Knife"
+  pull_request_number: 1 # Example PR number
+  # target_city: "San Francisco" # Could be derived or fixed
+
+# The ID of the first node to execute
+start_node_id: "fetch_github_pr"
+
+# List of nodes in the workflow
+nodes:
+  - id: "fetch_github_pr" # Unique identifier for this node instance in the workflow
+    type: "GitHubNode"    # Corresponds to a registered Node class (e.g., GitHubNode)
+    name: "Fetch Pull Request Details" # Human-readable name for this instance
+    description: "Retrieves details for a specific pull request from a GitHub repository."
+    config: # Configuration specific to this GitHubNode instance
+      action: "get_pr_details" # A new action we might add to GitHubNode
+      repository_owner: "{{ workflow.initial_input.github_owner }}" # Templating for dynamic values
+      repository_name: "{{ workflow.initial_input.github_repo }}"
+      pull_request_number: "{{ workflow.initial_input.pull_request_number }}"
+      credential_name: "GITHUB_MAIN_TOKEN" # Name of the credential to use from AuthManager
+    # input_mapping: # Optional: How data from previous node/context maps to this node's input
+      # owner: "workflow.initial_input.github_owner"
+      # repo: "workflow.initial_input.github_repo"
+      # pr_number: "workflow.initial_input.pull_request_number"
+    next_node_id: "get_weather_for_pr_author_location" # ID of the next node to execute
+    # on_failure_node_id: "handle_github_error" # Optional: Node to jump to on failure
+
+  - id: "get_weather_for_pr_author_location"
+    type: "OpenWeatherNode" # Assuming an OpenWeatherNode exists or will be created
+    name: "Get Weather for PR Author Location"
+    description: "Fetches current weather for a city, potentially derived from PR author's location (conceptual)."
+    config:
+      action: "get_current_weather_by_city"
+      # city_name: "{{ nodes.fetch_github_pr.output.data.user.location_city }}" # Example of using output from previous node
+      city_name: "London" # Static for now, as deriving location is complex
+      units: "metric"
+      credential_name: "OPENWEATHER_API_KEY"
+    # input_mapping:
+      # city: "nodes.fetch_github_pr.output.data.user.location_city" # This requires parsing location string
+    next_node_id: null # End of this linear workflow path
+    # on_failure_node_id: "handle_weather_error"
+
+  # Example of a utility node (conceptual, not fully defined here)
+  # - id: "log_pr_details"
+  #   type: "LoggingNode"
+  #   name: "Log PR Information"
+  #   config:
+  #     level: "INFO"
+  #     message_template: "PR #{{ nodes.fetch_github_pr.output.data.number }} ({{ nodes.fetch_github_pr.output.data.title }}) by {{ nodes.fetch_github_pr.output.data.user.login }}"
+  #   next_node_id: "get_weather_for_pr_author_location"
+
+  # Example error handling nodes (conceptual)
+  # - id: "handle_github_error"
+  #   type: "NotificationNode"
+  #   name: "Notify GitHub API Error"
+  #   config:
+  #     channel: "email"
+  #     recipient: "devops@example.com"
+  #     subject_template: "Workflow Error: {{ workflow.name }} - GitHub Node Failed"
+  #     message_template: "Error in node {{ workflow.current_error.node_id }}: {{ workflow.current_error.message }}"
+  #   next_node_id: null # Terminate after error notification
+
+  # - id: "handle_weather_error"
+  #   type: "LoggingNode"
+  #   name: "Log Weather API Error"
+  #   config:
+  #     level: "ERROR"
+  #     message_template: "Failed to fetch weather. Node {{ workflow.current_error.node_id }}. Error: {{ workflow.current_error.message }}"
+  #   next_node_id: null
+

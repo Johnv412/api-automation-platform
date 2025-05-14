@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - API Platform Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>API Integration Platform Dashboard</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/nodes">Nodes</a>
+            <a href="/workflows">Workflows</a>
+            <a href="/logs">Logs</a>
+        </nav>
+    </header>
+    <main>
+        <h2>Available Nodes</h2>
+        <div id="nodes-container">
+            <p>Loading nodes...</p>
+            <!-- Nodes will be dynamically inserted here by JavaScript -->
+        </div>
+    </main>
+    <footer>
+        <p>&copy; 2025 API Integration Platform</p>
+    </footer>
+    <script>
+        async function fetchNodes() {
+            const container = document.getElementById('nodes-container');
+            try {
+                const response = await fetch('/api/nodes/');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const nodes = await response.json();
+                
+                if (nodes.length === 0) {
+                    container.innerHTML = '<p>No nodes available.</p>';
+                    return;
+                }
+
+                let html = '<ul>';
+                nodes.forEach(node => {
+                    html += `<li>
+                                <h3>${node.name} (${node.category || 'General'})</h3>
+                                <p>${node.description || 'No description available.'}</p>
+                                ${node.schema_error ? `<p class="error">Schema Error: ${node.schema_error}</p>` : ''}
+                                <details>
+                                    <summary>View Schema</summary>
+                                    <pre>${JSON.stringify(node.schema, null, 2)}</pre>
+                                </details>
+                             </li>`;
+                });
+                html += '</ul>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Failed to fetch nodes:', error);
+                container.innerHTML = `<p class="error">Failed to load nodes: ${error.message}. Check console for details.</p>`;
+            }
+        }
+        document.addEventListener('DOMContentLoaded', fetchNodes);
+    </script>
+</body>
+</html>
+

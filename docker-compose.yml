@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  api_platform:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: api_integration_platform
+    ports:
+      - "5001:5001" # Expose dashboard port (adjust if your default is different)
+    volumes:
+      # Mount logs directory for persistence and easy access from host
+      - ./logs:/app/logs
+      # Mount workflow definitions for easy updates without rebuilding image
+      - ./workflows/definitions:/app/workflows/definitions
+      # Mount configuration files for easy updates
+      # You might have a base config in the image and mount environment-specific overrides
+      - ./config:/app/config
+    environment:
+      # Environment variables can be set here or in an .env file
+      - AIP_ENV=development # or production, staging, etc.
+      - AIP_CONFIG_PATH=/app/config/development.yaml # Example path within container
+      # - GITHUB_TOKEN=${GITHUB_TOKEN} # Example for passing secrets, use .env for actual values
+      # - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
+    env_file:
+      - .env # Load environment variables from .env file (optional, for sensitive data)
+    restart: unless-stopped
+    # healthcheck:
+    #   test: ["CMD", "curl", "--fail", "http://localhost:5001/"] # Basic healthcheck for dashboard
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 30s # Give some time for the app to start
+
+  # You could add other services here if needed, e.g., a database, Redis for caching/queueing
+  # redis:
+  #   image: "redis:alpine"
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis_data:/data
+
+# volumes:
+#   redis_data: # For persisting Redis data
+

@@ -1,0 +1,51 @@
+# config/development.yaml
+# Development specific configurations for API Integration Platform
+
+version: "0.1.0-dev"
+platform_name: "API Integration Platform (Dev)"
+
+global_log_level: "DEBUG" # Overrides default root log level in logging_manager
+
+logging:
+  # Overrides for logging_manager.DEFAULT_LOGGING_CONFIG
+  root:
+    level: "DEBUG"
+    handlers: ["console", "file_json"]
+  handlers:
+    console:
+      level: "DEBUG"
+      formatter: "detailed"
+    file_json:
+      filename: "logs/platform_dev.log.json"
+      level: "DEBUG"
+  loggers:
+    "core.workflow_engine":
+      level: "DEBUG"
+    "utils.api_client":
+      level: "DEBUG"
+    "dashboard":
+      level: "DEBUG"
+
+workflows:
+  definitions_path: "workflows/definitions/"
+
+dashboard:
+  enabled: true
+  port: 5001
+  host: "0.0.0.0"
+  title: "API Platform Dashboard (Dev)"
+  root_path: "" # No root path for easier local dev access http://localhost:5001/
+
+nodes_default_config:
+  GitHubNode:
+    base_url: "https://api.github.com"
+
+# Example of how credentials might be referenced (to be resolved by SecureConfigLoader or AuthManager)
+# credentials_config:
+#   github_primary:
+#     type: "env_token"
+#     env_variable_name: "GITHUB_TOKEN"
+#   another_service_key:
+#     type: "direct_value" # Not recommended for production
+#     api_key: "actual_api_key_here_dev_only"
+
